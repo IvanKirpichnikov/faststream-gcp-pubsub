@@ -77,3 +77,10 @@ async def admin(
 def queue() -> str:
     # Pub/Sub resource ids start with a letter; a bare UUID may not.
     return f"q-{uuid4()}"
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    # A shared testcase marked `connected` needs a real service: here, the emulator.
+    for item in items:
+        if item.get_closest_marker("connected") and not item.get_closest_marker("gcp"):
+            item.add_marker(pytest.mark.gcp)

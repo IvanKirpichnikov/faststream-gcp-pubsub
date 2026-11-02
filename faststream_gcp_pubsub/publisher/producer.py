@@ -117,7 +117,9 @@ class PubSubProducer(ProducerProto["PubSubPublishCommand"]):
             topic=resource_path(self.project_id, "topics", cmd.destination)
         )
         messages = request.messages
-        for body in cmd.batch_bodies:
+        # a single publish of `None` is one message with empty data, not an empty batch
+        bodies = cmd.batch_bodies if cmd.extra_bodies else (cmd.body,)
+        for body in bodies:
             data, content_type = await self.codec.encode(body, self.serializer)
             messages.add(
                 data=data,
