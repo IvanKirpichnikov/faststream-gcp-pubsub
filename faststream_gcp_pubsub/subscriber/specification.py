@@ -40,7 +40,9 @@ class PubSubSubscriberSpecification(
 
     def get_schema(self) -> dict[str, SubscriberSpec]:
         payloads = self.get_payloads()
-        description = self.description or f"Reads subscription `{self.subscription}`."
+        description = self.description or (
+            f"Reads subscription `{self.subscription}` of topic `{self.topic}`."
+        )
         return {
             self.name: SubscriberSpec(
                 address=self.topic,
