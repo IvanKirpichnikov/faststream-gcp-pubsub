@@ -14,7 +14,8 @@ def pytest_configure(config: pytest.Config) -> None:
 
 @pytest.fixture()
 def queue() -> str:
-    return str(uuid4())
+    # Pub/Sub resource ids start with a letter; a bare UUID may not.
+    return f"q-{uuid4()}"
 
 
 @pytest.fixture()

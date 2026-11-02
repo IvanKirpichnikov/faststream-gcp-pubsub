@@ -73,12 +73,6 @@ async def admin(
         await subscriber.transport.close()
 
 
-@pytest.fixture()
-def queue() -> str:
-    # Pub/Sub resource ids start with a letter; a bare UUID may not.
-    return f"q-{uuid4()}"
-
-
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     # A shared testcase marked `connected` needs a real service: here, the emulator.
     for item in items:

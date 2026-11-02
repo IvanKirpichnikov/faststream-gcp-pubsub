@@ -6,4 +6,5 @@ project root is the same license.
 The vendored files were adapted for faststream-gcp-pubsub:
 - imports were adjusted to the project layout and to FastStream 0.7.x;
 - branches, helpers and marks that belong to other brokers were removed;
+- the `queue` fixture names resources the way Pub/Sub accepts them;
 - the generic testcase logic is unchanged.
