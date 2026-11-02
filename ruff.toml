@@ -12,6 +12,7 @@ target-version = "py310"
 include = [
     "faststream_gcp_pubsub/**/*.py",
     "tests/**/*.py",
+    "docs/docs_src/**/*.py",
     "pyproject.toml",
 ]
 

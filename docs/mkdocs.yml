@@ -1,0 +1,122 @@
+site_name: faststream-gcp-pubsub
+site_description: A Google Cloud Pub/Sub broker for FastStream, maintained by the community.
+site_url: https://powersemmi.github.io/faststream-gcp-pubsub/
+site_author: faststream-gcp-pubsub contributors
+copyright: Apache License 2.0
+
+docs_dir: docs
+
+watch:
+  - docs
+  - docs_src
+  - ../faststream_gcp_pubsub
+
+repo_name: powersemmi/faststream-gcp-pubsub
+repo_url: https://github.com/powersemmi/faststream-gcp-pubsub
+edit_uri: https://github.com/powersemmi/faststream-gcp-pubsub/tree/main/docs/docs
+
+validation:
+  anchors: warn
+  unrecognized_links: warn
+
+theme:
+  name: material
+  font:
+    text: Roboto
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil-circle-outline
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.tracking
+    - navigation.prune
+    - navigation.top
+    - navigation.footer
+    - content.tabs.link
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            filters:
+              - "!^_"
+            show_root_heading: true
+            show_if_no_docstring: true
+            members_order: source
+            separate_signature: true
+            unwrap_annotated: true
+            merge_init_into_class: true
+            docstring_section_style: spacy
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_signature_annotations: true
+
+markdown_extensions:
+  - toc:
+      permalink: "#"
+      permalink_title: Anchor link to this section for reference
+      toc_depth: 3
+  - extra
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/powersemmi/faststream-gcp-pubsub
+      name: faststream-gcp-pubsub on GitHub
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - getting-started.md
+      - Emulator and credentials: emulator-and-credentials.md
+  - Guide:
+      - Topics and subscriptions: topics-and-subscriptions.md
+      - Declaring resources: declaring-resources.md
+      - Publishing: publishing.md
+      - Consuming: consuming.md
+      - Leases and flow control: leases-and-flow-control.md
+      - Replies: replies.md
+      - Routers: routers.md
+      - Testing: testing.md
+  - Integrations:
+      - FastAPI: fastapi.md
+      - Observability: observability.md
+      - AsyncAPI: asyncapi.md
+  - API reference: api.md

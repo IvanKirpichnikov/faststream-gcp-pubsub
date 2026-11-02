@@ -7,3 +7,5 @@ __pycache__/
 .coverage
 dist/
 build/
+docs/site/
+site/
