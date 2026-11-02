@@ -1,0 +1,9 @@
+The files under tests/ whose first line reads "Vendored from FastStream" are copied
+from FastStream (https://github.com/ag2ai/faststream), Copyright the FastStream
+authors, licensed under the Apache License, Version 2.0. The LICENSE file at the
+project root is the same license.
+
+The vendored files were adapted for faststream-gcp-pubsub:
+- imports were adjusted to the project layout and to FastStream 0.7.x;
+- branches, helpers and marks that belong to other brokers were removed;
+- the generic testcase logic is unchanged.
