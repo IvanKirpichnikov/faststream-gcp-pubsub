@@ -15,7 +15,7 @@ from typing_extensions import override
 from faststream_gcp_pubsub.message import PubSubRawMessage
 from faststream_gcp_pubsub.parser import PubSubParser
 from faststream_gcp_pubsub.publisher.fake import PubSubFakePublisher
-from faststream_gcp_pubsub.schemas import resource_path
+from faststream_gcp_pubsub.schemas import PubSubTopic, resource_path
 
 from .settler import Settler
 from .stream import StreamingPull
@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
     from faststream_gcp_pubsub.broker.config import PubSubBrokerConfig
     from faststream_gcp_pubsub.message import PubSubMessage
-    from faststream_gcp_pubsub.schemas import PubSubSubscription, PubSubTopic
+    from faststream_gcp_pubsub.schemas import PubSubSubscription
 
     from .config import PubSubSubscriberConfig
     from .settler import FlowControl
@@ -154,10 +154,15 @@ class PubSubBaseSubscriber(TasksMixin, SubscriberUsecase[PubSubRawMessage]):
         # router prefixes are part of the names the service sees
         topic = replace(self._topic, name=self.topic)
         subscription = replace(self._subscription, name=self.subscription)
-        with contextlib.suppress(exceptions.AlreadyExists):
-            await config.connection.publisher.create_topic(
-                request=topic.to_proto(project)
-            )
+        topics = [topic]
+        if (policy := subscription.dead_letter_policy) is not None:
+            # the service refuses a dead-letter policy whose topic does not exist yet
+            topics.append(PubSubTopic(policy.topic))
+        for declared in topics:
+            with contextlib.suppress(exceptions.AlreadyExists):
+                await config.connection.publisher.create_topic(
+                    request=declared.to_proto(project)
+                )
         with contextlib.suppress(exceptions.AlreadyExists):
             await config.connection.subscriber.create_subscription(
                 request=subscription.to_proto(project, topic.path(project))
@@ -167,8 +172,10 @@ class PubSubBaseSubscriber(TasksMixin, SubscriberUsecase[PubSubRawMessage]):
     async def start(self) -> None:
         await super().start()
 
+        # a subscriber read by get_one() or iteration needs its subscription as well
+        await self.declare()
+
         if self.calls:
-            await self.declare()
             settler = self._ensure_settler()
             self._stream = StreamingPull(
                 self._outer_config.connection.subscriber,

@@ -32,5 +32,6 @@ class PubSubSubscriberConfig(SubscriberUsecaseConfig):
         if self._ack_policy is EMPTY:
             if self._outer_config.ack_policy is not EMPTY:
                 return self._outer_config.ack_policy
-            return AckPolicy.REJECT_ON_ERROR
+            # A nack feeds the retry and dead-letter policies; a reject is an ack on Pub/Sub.
+            return AckPolicy.NACK_ON_ERROR
         return self._ack_policy

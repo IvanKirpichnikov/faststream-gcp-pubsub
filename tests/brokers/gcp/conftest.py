@@ -71,3 +71,9 @@ async def admin(
     finally:
         await publisher.transport.close()
         await subscriber.transport.close()
+
+
+@pytest.fixture()
+def queue() -> str:
+    # Pub/Sub resource ids start with a letter; a bare UUID may not.
+    return f"q-{uuid4()}"

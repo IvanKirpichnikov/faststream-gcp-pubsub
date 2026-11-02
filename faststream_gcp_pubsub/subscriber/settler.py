@@ -150,16 +150,16 @@ class Settler:
             return
         batch.ids.append(ack_id)
         waiter = batch.future() if self.exactly_once else None
-        if len(batch.ids) >= MAX_IDS_PER_REQUEST or waiter is not None:
-            self._wake.set()
+        self._wake.set()
         if waiter is not None:
             await asyncio.shield(waiter)
 
     async def _flush_loop(self) -> None:
         while True:
             await self._wake.wait()
-            # gather what arrives meanwhile into the same request
-            await asyncio.sleep(self.flow.ack_batch_wait)
+            if max(len(self._acks.ids), len(self._nacks.ids)) < MAX_IDS_PER_REQUEST:
+                # gather what arrives meanwhile into the same request
+                await asyncio.sleep(self.flow.ack_batch_wait)
             self._wake.clear()
             await self.flush()
 
