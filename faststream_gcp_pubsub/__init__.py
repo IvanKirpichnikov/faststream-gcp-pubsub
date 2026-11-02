@@ -6,7 +6,7 @@ from faststream_gcp_pubsub.broker.router import PubSubPublisher, PubSubRoute, Pu
 from faststream_gcp_pubsub.response import PubSubResponse
 from faststream_gcp_pubsub.schemas import (
     DeadLetterPolicy,
-    PubSubSubscription,
+    PubSub,
     PubSubTopic,
     RetryPolicy,
 )
@@ -23,7 +23,7 @@ __all__ = (
     "PubSubResponse",
     "PubSubRoute",
     "PubSubRouter",
-    "PubSubSubscription",
+    "PubSub",
     "PubSubTopic",
     "RetryPolicy",
 )

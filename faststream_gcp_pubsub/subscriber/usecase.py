@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
     from faststream_gcp_pubsub.broker.config import PubSubBrokerConfig
     from faststream_gcp_pubsub.message import PubSubMessage
-    from faststream_gcp_pubsub.schemas import PubSubSubscription
+    from faststream_gcp_pubsub.schemas import PubSub
 
     from .config import PubSubSubscriberConfig
     from .settler import FlowControl
@@ -71,7 +71,7 @@ class PubSubBaseSubscriber(TasksMixin, SubscriberUsecase[PubSubRawMessage]):
         return f"{self._outer_config.prefix}{self._topic.name}"
 
     @property
-    def subscription_schema(self) -> "PubSubSubscription":
+    def subscription_schema(self) -> "PubSub":
         return self._subscription
 
     @property
