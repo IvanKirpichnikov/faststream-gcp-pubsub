@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - reopened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: "3.13"
+      - name: Install Dependencies
+        run: uv sync --locked
+      - name: Ruff check
+        run: uv run ruff check
+      - name: Ruff format
+        run: uv run ruff format --check
+      - name: Mypy
+        run: uv run mypy
+
+  test:
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: uv sync --locked
+      - name: Test
+        run: uv run pytest -vv
+
+  test-emulator:
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: "3.13"
+      # Service containers cannot set a command, so the emulator is started by hand.
+      - name: Start Pub/Sub emulator
+        run: |
+          docker run -d --name pubsub-emulator -p 8085:8085 \
+            gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators \
+            gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=faststream-test
+          for _ in $(seq 1 60); do
+            if curl -fsS http://localhost:8085 > /dev/null 2>&1; then
+              echo "Emulator is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs pubsub-emulator
+          echo "Emulator did not start" >&2
+          exit 1
+      - name: Install Dependencies
+        run: uv sync --locked
+      - name: Test
+        env:
+          PUBSUB_EMULATOR_HOST: localhost:8085
+        run: uv run pytest -vv -m gcp
+      - name: Emulator logs
+        if: failure()
+        run: docker logs pubsub-emulator
+
+  # This job does nothing and is only used for the branch protection.
+  # from: https://github.com/re-actors/alls-green
+  # It must always run, otherwise GitHub marks it skipped when a dependency fails,
+  # and a skipped required check may be read as success.
+  result:
+    name: CI result
+    if: always()
+    needs:
+      - lint
+      - test
+      - test-emulator
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          allowed-skips: lint, test, test-emulator
+          jobs: ${{ toJSON(needs) }}

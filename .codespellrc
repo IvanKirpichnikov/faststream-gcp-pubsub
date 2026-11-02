@@ -1,0 +1,2 @@
+[codespell]
+skip = uv.lock,.git,.venv,.mypy_cache,.ruff_cache,.pytest_cache

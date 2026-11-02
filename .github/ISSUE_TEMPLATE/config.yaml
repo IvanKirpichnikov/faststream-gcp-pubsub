@@ -1,0 +1,6 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: Question or Problem
+    about: Ask a question or ask about a problem in GitHub Discussions.
+    url: https://github.com/powersemmi/faststream-gcp-pubsub/discussions
