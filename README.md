@@ -156,7 +156,7 @@ returns the messages it still holds to the service.
 ### Replies
 
 A message published with `reply_to="<topic>"` gets the handler's return value published to that
-topic. `PubSubResponse` sets the reply's ordering key and attributes:
+topic. `PubSubResponse` sets the reply's ordering key and headers (attributes):
 
 ```python
 from faststream_gcp_pubsub import PubSubResponse
