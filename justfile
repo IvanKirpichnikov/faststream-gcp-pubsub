@@ -9,6 +9,12 @@ lint:
     uv run ruff check
     uv run ruff format --check
     uv run mypy
+    uv run pytest --collect-only -q -m "" -p tests.unused_fixtures
+
+# the workflows: actionlint (with shellcheck over the `run:` scripts) and zizmor
+lint-workflows:
+    uv run actionlint
+    uv run zizmor .github
 
 fmt:
     uv run ruff format
