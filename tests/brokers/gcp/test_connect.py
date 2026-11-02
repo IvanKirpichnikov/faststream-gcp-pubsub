@@ -1,4 +1,5 @@
 import pytest
+from faststream.exceptions import IncorrectState
 
 from faststream_gcp_pubsub import PubSubBroker
 
@@ -33,3 +34,17 @@ async def test_ping_fails_without_server() -> None:
     async with broker:
         await broker.connect()
         assert not await broker.ping(timeout=0.5)
+
+
+@pytest.mark.asyncio()
+async def test_publish_after_stop_raises() -> None:
+    broker = PubSubBroker(project_id="p", emulator_host="localhost:1")
+    publisher = broker.publisher("orders")
+
+    await broker.connect()
+    await broker.stop()
+
+    with pytest.raises(IncorrectState):
+        await broker.publish("x", "orders")
+    with pytest.raises(IncorrectState):
+        await publisher.publish("x")
