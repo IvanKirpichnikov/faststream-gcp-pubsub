@@ -87,6 +87,8 @@ warn_unused_ignores = true
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 disallow_any_unimported = false
+# google-auth and the GAPIC transports ship untyped functions
+untyped_calls_exclude = ["google"]
 enable_error_code = [
     "exhaustive-match",
     "ignore-without-code",
