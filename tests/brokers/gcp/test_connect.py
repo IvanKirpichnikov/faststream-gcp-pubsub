@@ -1,7 +1,10 @@
+from typing import Any
+
 import pytest
 from faststream.exceptions import IncorrectState
 
 from faststream_gcp_pubsub import PubSubBroker
+from tests.brokers.base.connection import BrokerConnectionTestcase
 
 from .conftest import Settings
 
@@ -48,3 +51,15 @@ async def test_publish_after_stop_raises() -> None:
         await broker.publish("x", "orders")
     with pytest.raises(IncorrectState):
         await publisher.publish("x")
+
+
+@pytest.mark.connected()
+@pytest.mark.gcp()
+class TestConnection(BrokerConnectionTestcase):
+    broker = PubSubBroker
+
+    def get_broker_args(self, settings: Settings) -> dict[str, Any]:
+        return {
+            "project_id": settings.project_id,
+            "emulator_host": settings.emulator_host,
+        }
