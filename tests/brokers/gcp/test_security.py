@@ -1,4 +1,5 @@
 import pytest
+from faststream.exceptions import IncorrectState
 from faststream.security import SASLPlaintext
 from google.auth.credentials import AnonymousCredentials
 
@@ -54,8 +55,6 @@ def test_explicit_none_ignores_the_emulator_variable(
 async def test_connect_without_project_is_refused(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from faststream.exceptions import IncorrectState
-
     monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
     broker = PubSubBroker(emulator_host="localhost:1")
 
