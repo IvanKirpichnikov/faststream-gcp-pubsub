@@ -1,5 +1,4 @@
 import asyncio
-from types import TracebackType
 from typing import Any
 from unittest.mock import MagicMock
 from uuid import uuid4
@@ -17,12 +16,11 @@ from opentelemetry.semconv._incubating.attributes.messaging_attributes import (
     MESSAGING_GCP_PUBSUB_MESSAGE_ORDERING_KEY,
 )
 from opentelemetry.semconv.trace import SpanAttributes
-from typing_extensions import Self
 
 from faststream_gcp_pubsub import PubSubBroker
 from faststream_gcp_pubsub.opentelemetry import PubSubTelemetryMiddleware
 from faststream_gcp_pubsub.testing import TestPubSubBroker
-from tests.brokers.gcp.basic import PubSubMemoryTestcaseConfig, PubSubTestcaseConfig
+from tests.brokers.gcp.basic import PubSubInProcessTestcaseConfig, PubSubTestcaseConfig
 from tests.brokers.gcp.conftest import Admin
 from tests.brokers.gcp.test_consume import TestConsume as ConsumeCase
 from tests.brokers.gcp.test_publish import TestPublish as PublishCase
@@ -40,34 +38,6 @@ class MaskedSpan:
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._span, name)
-
-
-class InProcessBroker:
-    """A broker already patched for tests, shaped like a live one.
-
-    The shared telemetry cases enter the broker with ``async with`` and call ``start`` and
-    ``publish`` on it, as they do on a live broker; the test broker exposes those on the
-    broker it wraps.
-    """
-
-    def __init__(self, broker: PubSubBroker) -> None:
-        self._broker = broker
-        self._test = TestPubSubBroker(broker)
-
-    async def __aenter__(self) -> Self:
-        await self._test.__aenter__()
-        return self
-
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: TracebackType | None,
-    ) -> None:
-        await self._test.__aexit__(exc_type, exc_val, exc_tb)
-
-    def __getattr__(self, name: str) -> Any:
-        return getattr(self._broker, name)
 
 
 class TelemetryCases(LocalTelemetryTestcase):
@@ -161,16 +131,7 @@ class TelemetryCases(LocalTelemetryTestcase):
 
 
 @pytest.mark.asyncio()
-class TestTelemetry(PubSubMemoryTestcaseConfig, TelemetryCases):
-    def get_broker(self, apply_types: bool = False, **kwargs: Any) -> Any:
-        # The shared cases run a broker with ``async with`` and never patch it, since a live
-        # broker needs no patch; the in-process one is built already patched.
-        return InProcessBroker(super().get_broker(apply_types, **kwargs))
-
-    def patch_broker(self, *brokers: Any, **kwargs: Any) -> Any:
-        (broker,) = brokers
-        return broker
-
+class TestTelemetry(PubSubInProcessTestcaseConfig, TelemetryCases):
     async def test_no_trace_context_create_process_span(
         self,
         queue: str,

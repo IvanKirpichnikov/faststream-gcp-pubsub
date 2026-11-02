@@ -2,7 +2,10 @@ import asyncio
 from typing import Any
 
 import pytest
-from faststream.exceptions import FeatureNotSupportedException
+from faststream.exceptions import FeatureNotSupportedException, IgnoredException
+from faststream.message import AckStatus
+from faststream.prometheus.consts import PROCESSING_STATUS_BY_HANDLER_EXCEPTION_MAP
+from faststream.prometheus.types import ProcessingStatus
 from prometheus_client import CollectorRegistry
 
 from faststream_gcp_pubsub import PubSubBroker
@@ -33,7 +36,51 @@ class RequestNotSupported:
 class TestPrometheus(
     RequestNotSupported, PubSubPrometheusSettings, LocalPrometheusTestcase
 ):
-    pass
+    async def test_metrics(
+        self,
+        queue: str,
+        status: AckStatus,
+        exception_class: type[Exception] | None,
+        event: asyncio.Event,
+    ) -> None:
+        if exception_class not in {Exception, IgnoredException}:
+            await super().test_metrics(queue, status, exception_class, event)
+            return
+
+        # In process the handler's exception reaches the publishing call, as FastStream's test
+        # client raises it there, so the publish metrics differ from a live run; the full set
+        # is checked by TestPrometheusLive. Here: the exception surfaces and the processing
+        # metric records the status the middleware maps it to.
+        registry = CollectorRegistry()
+        broker = self.get_broker(
+            apply_types=True, middlewares=(self.get_middleware(registry=registry),)
+        )
+
+        async def handler(m: Any) -> None:
+            raise exception_class
+
+        broker.subscriber(*self.get_subscriber_params(queue)[0])(handler)
+
+        async with broker:
+            await broker.start()
+            with pytest.raises(exception_class):
+                await broker.publish("hello", queue)
+
+        expected = (
+            PROCESSING_STATUS_BY_HANDLER_EXCEPTION_MAP.get(exception_class)
+            or ProcessingStatus.error
+        )
+        statuses = [
+            sample.labels["status"]
+            for metric in registry.collect()
+            if metric.name == "faststream_received_processed_messages"
+            for sample in metric.samples
+            if sample.name.endswith("_total")
+        ]
+        assert statuses == [expected.value]
+
+    # the same cases as the shared test, which an override does not inherit
+    test_metrics.pytestmark = LocalPrometheusTestcase.test_metrics.pytestmark  # type: ignore[attr-defined]
 
 
 class TestMetricsSettingsProvider(

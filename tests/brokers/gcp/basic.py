@@ -1,7 +1,8 @@
 from contextlib import AbstractAsyncContextManager
+from types import TracebackType
 from typing import Any, overload
 
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from faststream_gcp_pubsub import PubSubBroker, PubSubRouter, PubSubSubscription
 from tests.brokers.base.basic import BaseTestcaseConfig
@@ -46,3 +47,47 @@ class PubSubMemoryTestcaseConfig(PubSubTestcaseConfig):
         from faststream_gcp_pubsub.testing import TestPubSubBroker  # noqa: PLC0415
 
         return TestPubSubBroker(*brokers, **kwargs)
+
+
+class InProcessBroker:
+    """A broker already patched for tests, shaped like a live one.
+
+    Shared cases written for a live broker enter it with ``async with`` and call ``start`` and
+    ``publish`` on it; this wrapper enters ``TestPubSubBroker`` instead and forwards the rest
+    to the broker it wraps.
+    """
+
+    def __init__(self, broker: PubSubBroker) -> None:
+        from faststream_gcp_pubsub.testing import TestPubSubBroker  # noqa: PLC0415
+
+        self._broker = broker
+        self._test = TestPubSubBroker(broker)
+
+    async def __aenter__(self) -> Self:
+        await self._test.__aenter__()
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        await self._test.__aexit__(exc_type, exc_val, exc_tb)
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._broker, name)
+
+
+class PubSubInProcessTestcaseConfig(PubSubMemoryTestcaseConfig):
+    """In-process, for shared cases that run a broker without patching it.
+
+    Every broker is built already patched, so such a case never reaches a real service.
+    """
+
+    def get_broker(self, apply_types: bool = False, **kwargs: Any) -> Any:
+        return InProcessBroker(super().get_broker(apply_types, **kwargs))
+
+    def patch_broker(self, *brokers: Any, **kwargs: Any) -> Any:
+        (broker,) = brokers
+        return broker
