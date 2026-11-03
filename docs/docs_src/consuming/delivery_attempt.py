@@ -2,9 +2,9 @@ from faststream import FastStream, Logger
 
 from faststream_gcp_pubsub import (
     DeadLetterPolicy,
+    PubSub,
     PubSubBroker,
     PubSubMessage,
-    PubSub,
 )
 
 broker = PubSubBroker(project_id="my-project")

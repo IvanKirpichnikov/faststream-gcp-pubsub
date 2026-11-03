@@ -1,6 +1,6 @@
 from faststream import FastStream, Logger
 
-from faststream_gcp_pubsub import PubSubBroker, PubSub
+from faststream_gcp_pubsub import PubSub, PubSubBroker
 
 broker = PubSubBroker(project_id="faststream-test", emulator_host="localhost:8085")
 app = FastStream(broker)

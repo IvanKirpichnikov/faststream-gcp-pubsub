@@ -1,6 +1,6 @@
 from faststream import AckPolicy, FastStream, Logger
 
-from faststream_gcp_pubsub import PubSubBroker, PubSubMessage, PubSub
+from faststream_gcp_pubsub import PubSub, PubSubBroker, PubSubMessage
 
 broker = PubSubBroker(project_id="my-project")
 app = FastStream(broker)

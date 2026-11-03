@@ -7,7 +7,7 @@ import pytest
 from faststream.exceptions import FeatureNotSupportedException
 from google.api_core.exceptions import InvalidArgument
 
-from faststream_gcp_pubsub import PubSubBroker, PubSub, PubSubTopic
+from faststream_gcp_pubsub import PubSub, PubSubBroker, PubSubTopic
 from faststream_gcp_pubsub.testing import InMemoryProducer, TestPubSubBroker
 from tests.brokers.base.testclient import BrokerTestclientTestcase
 

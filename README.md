@@ -16,7 +16,7 @@ A [Google Cloud Pub/Sub](https://cloud.google.com/pubsub) broker for
 from faststream import FastStream
 from pydantic import BaseModel
 
-from faststream_gcp_pubsub import PubSubBroker, PubSub
+from faststream_gcp_pubsub import PubSub, PubSubBroker
 
 
 class Order(BaseModel):
@@ -86,8 +86,8 @@ from faststream import FastStream
 
 from faststream_gcp_pubsub import (
     DeadLetterPolicy,
-    PubSubBroker,
     PubSub,
+    PubSubBroker,
     PubSubTopic,
     RetryPolicy,
 )

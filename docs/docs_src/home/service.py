@@ -1,7 +1,7 @@
 from faststream import FastStream
 from pydantic import BaseModel
 
-from faststream_gcp_pubsub import PubSubBroker, PubSub
+from faststream_gcp_pubsub import PubSub, PubSubBroker
 
 
 class Order(BaseModel):

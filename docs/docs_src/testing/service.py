@@ -1,6 +1,6 @@
 from faststream import FastStream
 
-from faststream_gcp_pubsub import PubSubBroker, PubSub, PubSubTopic
+from faststream_gcp_pubsub import PubSub, PubSubBroker, PubSubTopic
 
 broker = PubSubBroker(project_id="faststream-test")
 app = FastStream(broker)
@@ -14,7 +14,5 @@ async def bill(order: dict[str, int]) -> dict[str, int]:
     return {"order_id": order["id"]}
 
 
-@broker.subscriber(
-    PubSub("shipments-courier", declare=True), topic="shipments"
-)
+@broker.subscriber(PubSub("shipments-courier", declare=True), topic="shipments")
 async def ship(shipment: dict[str, int]) -> None: ...

@@ -4,8 +4,8 @@ from faststream import FastStream
 
 from faststream_gcp_pubsub import (
     DeadLetterPolicy,
-    PubSubBroker,
     PubSub,
+    PubSubBroker,
     PubSubTopic,
     RetryPolicy,
 )

@@ -12,9 +12,9 @@ from faststream.exceptions import IncorrectState
 from faststream_gcp_pubsub import (
     DeadLetterPolicy,
     FlowControl,
+    PubSub,
     PubSubBroker,
     PubSubMessage,
-    PubSub,
     PubSubTopic,
     RetryPolicy,
 )

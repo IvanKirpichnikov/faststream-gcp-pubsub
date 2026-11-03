@@ -219,9 +219,7 @@ class PubSubBroker(
             The full resource name of the subscription.
         """
         subscription_ = (
-            subscription
-            if isinstance(subscription, PubSub)
-            else PubSub(subscription)
+            subscription if isinstance(subscription, PubSub) else PubSub(subscription)
         )
         topic_name = topic.name if isinstance(topic, PubSubTopic) else topic
         project = self.config.project_id

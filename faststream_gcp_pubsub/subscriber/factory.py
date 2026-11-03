@@ -33,9 +33,7 @@ def create_subscriber(
     include_in_schema: bool = True,
 ) -> SubscriberType:
     subscription_ = (
-        subscription
-        if isinstance(subscription, PubSub)
-        else PubSub(subscription)
+        subscription if isinstance(subscription, PubSub) else PubSub(subscription)
     )
     if topic is None:
         # A subscription named alone is taken as attached to the topic of the same name.

@@ -85,9 +85,7 @@ class TestPubSubBroker(TestBroker[PubSubBroker, Any], broker=PubSubBroker):
 
         # Under `with_real` the subscription is created on the service only when the
         # publisher declares its topic: a test never adds resources nobody asked for.
-        subscription = PubSub(
-            publisher.topic, declare=publisher.topic_schema.declare
-        )
+        subscription = PubSub(publisher.topic, declare=publisher.topic_schema.declare)
         sub = cast(
             "PubSubBaseSubscriber", broker.subscriber(subscription, persistent=False)
         )

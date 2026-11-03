@@ -4,7 +4,7 @@ from typing import Any, overload
 
 from typing_extensions import Self, override
 
-from faststream_gcp_pubsub import PubSubBroker, PubSubRouter, PubSub
+from faststream_gcp_pubsub import PubSub, PubSubBroker, PubSubRouter
 from tests.brokers.base.basic import BaseTestcaseConfig
 
 from .conftest import Settings
